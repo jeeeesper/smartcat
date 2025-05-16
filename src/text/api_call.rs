@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use super::request_schemas::{AnthropicPrompt, OpenAiPrompt};
-use super::response_schemas::{AnthropicResponse, OllamaResponse, OpenAiResponse};
+use super::request_schemas::{AnthropicPrompt, DeeplPrompt, OpenAiPrompt};
+use super::response_schemas::{AnthropicResponse, DeeplResponse, OllamaResponse, OpenAiResponse};
 
 use crate::config::{
     api::{Api, ApiConfig},
@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 enum PromptFormat {
     OpenAi(OpenAiPrompt),
     Anthropic(AnthropicPrompt),
+    Deepl(DeeplPrompt),
 }
 
 pub fn post_prompt_and_get_answer(
@@ -53,6 +54,7 @@ pub fn post_prompt_and_get_answer(
             PromptFormat::OpenAi(OpenAiPrompt::from(prompt.clone()))
         }
         Api::Anthropic => PromptFormat::Anthropic(AnthropicPrompt::from(prompt.clone())),
+        Api::Deepl => PromptFormat::Deepl(DeeplPrompt::from(prompt.clone())),
         Api::AnotherApiForTests => panic!("This api is not made for actual use."),
     };
 
@@ -73,6 +75,10 @@ pub fn post_prompt_and_get_answer(
             "Authorization",
             &format!("Bearer {}", &api_config.get_api_key()),
         ),
+        Api::Deepl => request.header(
+            "Authorization",
+            &format!("DeepL-Auth-Key {}", &api_config.get_api_key()),
+        ),
         Api::AzureOpenai => request.header("api-key", &api_config.get_api_key()),
         Api::Anthropic => request
             .header("x-api-key", &api_config.get_api_key())
@@ -91,6 +97,7 @@ pub fn post_prompt_and_get_answer(
             handle_api_response::<OpenAiResponse>(request.send()?)
         }
         Api::Anthropic => handle_api_response::<AnthropicResponse>(request.send()?),
+        Api::Deepl => handle_api_response::<DeeplResponse>(request.send()?),
         Api::AnotherApiForTests => unreachable!(),
     };
     Ok(Message::assistant(&response_text))

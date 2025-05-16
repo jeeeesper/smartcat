@@ -39,6 +39,7 @@ Currently supports the following APIs:
 - Local runs with **[Ollama](https://github.com/ollama/ollama/blob/main/docs/README.md)** or any server compliant with its format; see the [Ollama setup](#ollama-setup) section for the free and easiest way to get started!  
 _(Answers might be slow depending on your setup; you may want to try the third-party APIs for an optimal workflow.)_
 - **[Anthropic](https://docs.anthropic.com/claude/docs/models-overview)**, **[Azure OpenAi](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference)**, **[Groq](https://console.groq.com/docs/models)**, **[Mistral AI](https://docs.mistral.ai/getting-started/models/)**, **[OpenAI](https://platform.openai.com/docs/models/overview)**
+- Translations are possible using the **[DeepL (Free)](https://developers.deepl.com/docs)** API.
 
 # Table of Contents
 
@@ -127,6 +128,13 @@ git diff | sc "summarize the changes"  # pipe data in
 cat en.md | sc "translate in french" >> fr.md   # write data out
 sc -e "use a more informal tone" -t 2 >> fr.md  # extend the conversation and raise the temprature
 ```
+
+To use the translation feature (assuming there is a default model configured), use it like this:
+```
+sc translate "Hei maailma"          # Returns "Hello world"
+cat essay.txt | sc translate -m fr  # Translates essay.txt to French
+```
+For translations, the model is interpreted as the target language, example values are `de`, `fr` or `it`.
 
 ### Integrating with editors
 
@@ -268,6 +276,11 @@ version = "2023-06-01"  # anthropic API version, see https://docs.anthropic.com/
 api_key = "<your_api_key>"
 default_model = "llama3.1-70b"
 url = "https://api.cerebras.ai/v1/chat/completions"
+
+[deepl]
+api_key = "<you_get_it_at_this_point>"
+url = "https://api-free.deepl.com/v2/translate"
+default_model = "en"
 ```
 
 `prompts.toml`
@@ -288,6 +301,10 @@ Never write ``` around your answer, provide only the result of the task you are 
 [empty]  # always nice to have an empty prompt available
 api = "openai"
 # not mentioning the model will use the default from the api config
+messages = []
+
+[translate]
+api = "deepl"
 messages = []
 
 [test]

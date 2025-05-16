@@ -23,6 +23,16 @@ pub(super) struct AnthropicPrompt {
     pub stream: Option<bool>,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub(super) struct DeeplPrompt {
+    // TODO: There are more parameters, such as `formality`, `tag_handling` and `source_lang`.
+    // They should also be used and configurable.
+    pub target_lang: String,
+    pub preserve_formatting: bool,
+    pub context: String,
+    pub text: Vec<String>,
+}
+
 impl From<Prompt> for OpenAiPrompt {
     fn from(prompt: Prompt) -> OpenAiPrompt {
         OpenAiPrompt {
@@ -63,5 +73,21 @@ impl From<Prompt> for AnthropicPrompt {
             stream: prompt.stream,
             max_tokens: 4096,
         }
+    }
+}
+
+impl From<Prompt> for DeeplPrompt {
+    fn from(prompt: Prompt) -> Self {
+        let Some((message, context)) = prompt.messages.split_last() else {
+            panic!("No messages for translation specified!");
+        };
+        DeeplPrompt {
+            target_lang: prompt
+                .model
+                .expect("Target Language ('model') must be specified either in the api config or in the prompt config"),
+            text: vec![message.content.to_string()],
+            context: context.into_iter().map(|m| m.content.clone()).collect::<Vec<_>>().join("\n"),
+            preserve_formatting: true,
+         }
     }
 }

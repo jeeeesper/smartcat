@@ -63,6 +63,17 @@ impl Prompt {
             char_limit: Some(50000),
         }
     }
+
+    pub fn translate() -> Self {
+        Prompt {
+            api: Api::Deepl,
+            model: Some("en".to_string()),
+            messages: vec![],
+            temperature: None,
+            char_limit: None,
+            stream: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone)]
@@ -115,6 +126,7 @@ pub(super) fn generate_prompts_file() -> std::io::Result<()> {
     let mut prompt_config = HashMap::new();
     prompt_config.insert("default", Prompt::default());
     prompt_config.insert("empty", Prompt::empty());
+    prompt_config.insert("translate", Prompt::translate());
 
     std::fs::create_dir_all(prompts_path().parent().unwrap())?;
 

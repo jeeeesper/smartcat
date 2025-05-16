@@ -49,3 +49,27 @@ impl From<OllamaResponse> for String {
         value.message.content
     }
 }
+
+#[derive(Debug, Deserialize)]
+struct DeeplResposeItem {
+    #[serde(rename(deserialize = "detected_source_language"))]
+    _detected_source_language: String,
+    text: String,
+}
+
+// DeepL
+#[derive(Debug, Deserialize)]
+pub(super) struct DeeplResponse {
+    translations: Vec<DeeplResposeItem>,
+}
+
+impl From<DeeplResponse> for String {
+    fn from(value: DeeplResponse) -> Self {
+        value
+            .translations
+            .into_iter()
+            .next()
+            .expect("No translations available")
+            .text
+    }
+}
